@@ -5,9 +5,11 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import ca.shared.ServerInterface;
+import ca.shared.WorkFile;
 
 public class FMClient {
 	public static void main(String[] args) {
@@ -20,7 +22,7 @@ public class FMClient {
 		FMClient client = new FMClient(distantHostname);
 		client.run();
 	}
-	
+
 	private ServerInterface stub = null;
 
 	public FMClient(String distantServerHostname) {
@@ -35,12 +37,7 @@ public class FMClient {
 	}
 
 	private void run() {
-//		boolean quitApp = false;
-		/*while (!quitApp) {
-			
-		}*/
 		Scanner scanInput = new Scanner(System.in);
-		String newUser = "";
 		if (stub != null) {
 			if (checkLogin()) {
 				String command = "";
@@ -50,22 +47,39 @@ public class FMClient {
 					System.out.println(">");
 					command = scanInput.nextLine();
 					switch (command) {
-					case "exit": interactConsole = false;
-					break;
-					default: System.out.println("invalid command");
-					break;
+					case "exit":
+						interactConsole = false;
+						break;
+					case "list":
+						getListOfFiles();
+						break;
+					default:
+						System.out.println("invalid command");
+						break;
 					}
 				}
-			}
-			else {
+			} else {
 				System.out.println("Mauvais nom d'utiliateur ou mot de passe. Create new user (yes/no)?");
-				newUser = scanInput.nextLine();
-				if (newUser.trim().equals("yes")) {
+
+				if (scanInput.nextLine().trim().equals("yes")) {
 					createUser();
+					System.out.println("user created");
 				}
-			}		
+			}
 		}
 		scanInput.close();
+	}
+
+	private void getListOfFiles() {
+		try {
+			ArrayList<WorkFile> listFiles = stub.list();
+			for (int count = 0; count < listFiles.size(); count++) {
+				System.out.println(listFiles.get(count).getName());
+			}
+		} catch (RemoteException e) {
+			System.out.println("Erreur: " + e.getMessage());
+		}
+
 	}
 
 	private ServerInterface loadServerStub(String hostname) {
@@ -75,8 +89,7 @@ public class FMClient {
 			Registry registry = LocateRegistry.getRegistry(hostname);
 			stub = (ServerInterface) registry.lookup("fmserver");
 		} catch (NotBoundException e) {
-			System.out.println("Erreur: Le nom '" + e.getMessage()
-					+ "' n'est pas défini dans le registre.");
+			System.out.println("Erreur: Le nom '" + e.getMessage() + "' n'est pas défini dans le registre.");
 		} catch (AccessException e) {
 			System.out.println("Erreur: " + e.getMessage());
 		} catch (RemoteException e) {
@@ -102,19 +115,20 @@ public class FMClient {
 			System.out.println("Erreur: " + e.getMessage());
 			e.printStackTrace();
 		}
-		//scanner.close();
+		// scanner.close();
 		return Validation;
 	}
-	
+
 	private boolean createUser() {
 		boolean isUserCreated = false;
-		System.out.print("Entrer le nom d'utilisateur : ");
+
 		@SuppressWarnings("resource")
 		Scanner scanner = new Scanner(System.in);
-		System.out.print("Entrer le mot de passe voulu : ");
+		System.out.print("Entrer le nom d'utilisateur : ");
 		String username = scanner.nextLine();
+		System.out.print("Entrer le mot de passe voulu : ");
 		String password = scanner.nextLine();
-		
+
 		try {
 			isUserCreated = stub.newlog(username, password);
 			return isUserCreated;
@@ -122,8 +136,7 @@ public class FMClient {
 			System.out.println("Erreur: " + e.getMessage());
 			return isUserCreated;
 		}
-		
-	}
 
 	}
 
+}
