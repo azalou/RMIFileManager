@@ -17,13 +17,14 @@ import ca.shared.WorkFile;
 
 public class FMClient {
 	private final static FMFileManager fileManager = new FMFileManager();
+	private final static String CLIENT_ID_FILE = "clientId.txt";
 	public static void main(String[] args) {
 		String distantHostname = "127.0.0.1";
+	
 
 		if (args.length > 0) {
 			distantHostname = args[0];
 		}
-
 		FMClient client = new FMClient(distantHostname);
 		client.run();
 	}
@@ -47,11 +48,16 @@ public class FMClient {
 			if (checkLogin()) {
 				String command = null;
 				System.out.println("succes");
+				String[] fullcommande = null;
 				boolean interactConsole = true;
 				while (interactConsole) {
 					System.out.println(">");
-					String[] fullcommande = scanInput.nextLine().trim().split(" ");
+					command = scanInput.nextLine();
+					
+					fullcommande = command.trim().split(" ");
+					
 					command = fullcommande[0];
+					
 					switch (command) {
 					case "exit":
 						interactConsole = false;
@@ -62,6 +68,16 @@ public class FMClient {
 					case "get":
 						getFileContent(fullcommande[1]);
 						break;
+					case "lock":
+						try {
+							stub.createIDclient();
+							lockFile(fullcommande[1]);
+						} catch (RemoteException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						
+						break;
 					default:
 						System.out.println("invalid command");
 						break;
@@ -69,14 +85,29 @@ public class FMClient {
 				}
 			} else {
 				System.out.println("Mauvais nom d'utiliateur ou mot de passe. Create new user (yes/no)?");
-
-				if (scanInput.nextLine().trim().equals("yes")) {
+				String createnewUser = scanInput.nextLine();
+				if (createnewUser.trim().equals("yes")) {
 					createUser();
+					
 					System.out.println("user created");
 				}
 			}
 		}
 		scanInput.close();
+	}
+
+	private void lockFile(String ficName) {
+		File fic = new File(ficName);
+		if (fic.exists()) {
+			try {
+				String chks = fileManager.getChecksum(ficName);
+				String IDclient = fileManager.readFile(CLIENT_ID_FILE);
+				stub.lock(ficName, IDclient, chks);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
 	}
 
 	private void getFileContent(String ficName) {
@@ -89,7 +120,13 @@ public class FMClient {
 			}
 		}
 		String chks = fileManager.getChecksum(ficName);
-		String contenu = stub.get(ficName, chks);
+		String contenu = null;
+		try {
+			contenu = stub.get(ficName, chks);
+		} catch (RemoteException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		
 		if (contenu !=null ) {
 			try {

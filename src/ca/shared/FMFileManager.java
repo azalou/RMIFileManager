@@ -24,13 +24,12 @@ public class FMFileManager {
 		return result;
 	}
 
-	public static String getChecksum(String fic) {
+	public String getChecksum(String fic) {
 		String checksum = null;
 		String contenu = null;
 		try {
-			contenu = readFile(fic);
+			contenu = readFile(fic);			
 			byte[] bytesOfMessage = contenu.getBytes("UTF-8");
-
 			MessageDigest md = MessageDigest.getInstance("MD5");
 			byte[] digest = md.digest(bytesOfMessage);
 			BigInteger bigInt = new BigInteger(1, digest);
@@ -45,7 +44,7 @@ public class FMFileManager {
 	}
 
 	public boolean writeFile(String fic, String contenu, String clientID) {
-		if (lm.getLockClientID(fic).equalsIgnoreCase(clientID)) {
+		if (lm.getLockClientID(fic).equalsIgnoreCase(clientID)) {			
 			try {
 				FileWriter fw = new FileWriter(fic, false);
 				fw.write(contenu);
@@ -60,7 +59,7 @@ public class FMFileManager {
 		}
 	}
 
-	public static String readFile(String fic) {
+	public String readFile(String fic) {
 		File fichier = new File(fic);
 		FileInputStream fis;
 		byte[] contenub = null;

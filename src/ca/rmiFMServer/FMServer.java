@@ -41,12 +41,12 @@ public class FMServer implements ServerInterface {
 			Registry registry = LocateRegistry.getRegistry();
 			registry.rebind("fmserver", stub);
 			System.out.println("Server ready.");
-		} catch (ConnectException e) {
+		} catch (ConnectException e1) {
 			System.err.println("Impossible de se connecter au registre RMI. Est-ce que rmiregistry est lancé ?");
 			System.err.println();
-			System.err.println("Erreur: " + e.getMessage());
-		} catch (Exception e) {
-			System.err.println("Erreur: " + e.getMessage());
+			System.err.println("Erreur1: " + e1.getMessage());
+		} catch (Exception e2) {
+			System.err.println("Erreur2: " + e2.getMessage());
 		}
 	}
 
@@ -65,9 +65,9 @@ public class FMServer implements ServerInterface {
 				tempUser = lecteur.next();
 				tempPassWor = lecteur.next();
 
-				if (tempUser.trim().equals(login.trim())) {
-					if (tempPassWor.trim().equals(password.trim())) {
-						clientVerified = true;
+				if (tempUser.trim().equals(login.trim())) {			
+					if (tempPassWor.trim().equals(password.trim())) {						
+						clientVerified = true;						
 					} else {
 						clientVerified = false;
 					}
@@ -75,9 +75,9 @@ public class FMServer implements ServerInterface {
 			}
 			lecteur.close();
 		} catch (FileNotFoundException e) {
-			System.out.println("erreur: " + e.getMessage());
+			System.out.println("FileNotFoundException: " + e.getMessage());
 		} catch (Exception e) {
-			System.out.println("erreur: " + e.getMessage());
+			System.out.println("Exception: " + e.getMessage());
 		}
 		return clientVerified;
 	}
@@ -97,7 +97,7 @@ public class FMServer implements ServerInterface {
 				tempUser = lecteur.next();
 				tempPasswor = lecteur.next();
 				
-				if (tempUser.trim().equals( login.trim())) {
+				if (tempUser.trim().equals(login.trim())) {					
 					System.out.println("L'utilisateur existe déjà");
 					return isNewUserCreated;
 				}
@@ -135,4 +135,8 @@ public class FMServer implements ServerInterface {
 		}
 	}
 
+	@Override
+	public String createIDclient() throws RemoteException {
+		return clientManager.createClientID();
+	}
 }
