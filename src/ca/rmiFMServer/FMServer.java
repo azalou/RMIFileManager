@@ -96,8 +96,8 @@ public class FMServer implements ServerInterface {
 			while (lecteur.hasNext()) {
 				tempUser = lecteur.next();
 				tempPasswor = lecteur.next();
-
-				if (tempUser.trim().equals(login.trim())) {
+				
+				if (tempUser.trim().equals( login.trim())) {
 					System.out.println("L'utilisateur existe déjà");
 					return isNewUserCreated;
 				}
@@ -127,11 +127,11 @@ public class FMServer implements ServerInterface {
 	}
 	
 	@Override
-	public Byte[] get(String fic, String chks) {
+	public String get(String fic, String chks) {
 		if (fileManager.isSameChecksum(fic, chks)) {
 			return null;
 		} else {
-			
+			return fileManager.readFile(fic);
 		}
 	}
 

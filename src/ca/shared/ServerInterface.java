@@ -14,5 +14,5 @@ public interface ServerInterface extends Remote {
 
 	ArrayList<WorkFile> list() throws RemoteException;
 
-	Byte[] get(String fic, String chks);
+	String get(String fic, String chks);
 }

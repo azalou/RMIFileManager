@@ -1,5 +1,8 @@
 package ca.rmiFMClient;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -8,10 +11,12 @@ import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import ca.shared.FMFileManager;
 import ca.shared.ServerInterface;
 import ca.shared.WorkFile;
 
 public class FMClient {
+	private final static FMFileManager fileManager = new FMFileManager();
 	public static void main(String[] args) {
 		String distantHostname = "127.0.0.1";
 
@@ -40,18 +45,22 @@ public class FMClient {
 		Scanner scanInput = new Scanner(System.in);
 		if (stub != null) {
 			if (checkLogin()) {
-				String command = "";
+				String command = null;
 				System.out.println("succes");
 				boolean interactConsole = true;
 				while (interactConsole) {
 					System.out.println(">");
-					command = scanInput.nextLine();
+					String[] fullcommande = scanInput.nextLine().trim().split(" ");
+					command = fullcommande[0];
 					switch (command) {
 					case "exit":
 						interactConsole = false;
 						break;
 					case "list":
 						getListOfFiles();
+						break;
+					case "get":
+						getFileContent(fullcommande[1]);
 						break;
 					default:
 						System.out.println("invalid command");
@@ -68,6 +77,31 @@ public class FMClient {
 			}
 		}
 		scanInput.close();
+	}
+
+	private void getFileContent(String ficName) {
+		File fic = new File(ficName);
+		if (!fic.exists()) {
+			try {
+				fic.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		String chks = fileManager.getChecksum(ficName);
+		String contenu = stub.get(ficName, chks);
+		
+		if (contenu !=null ) {
+			try {
+				FileWriter fw = new FileWriter(fic);
+				fw.write(contenu);
+				fw.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+		}
+		
 	}
 
 	private void getListOfFiles() {

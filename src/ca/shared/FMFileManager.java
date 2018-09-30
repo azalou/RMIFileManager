@@ -25,10 +25,10 @@ public class FMFileManager {
 	}
 
 	public static String getChecksum(String fic) {
-		String checksum = "";
+		String checksum = null;
+		String contenu = null;
 		try {
-			String contenu = readFile(fic);
-			
+			contenu = readFile(fic);
 			byte[] bytesOfMessage = contenu.getBytes("UTF-8");
 
 			MessageDigest md = MessageDigest.getInstance("MD5");
@@ -61,28 +61,26 @@ public class FMFileManager {
 	}
 
 	public static String readFile(String fic) {
+		File fichier = new File(fic);
+		FileInputStream fis;
+		byte[] contenub = null;
 		String contenu = null;
 		try {
-			BufferedReader br = new BufferedReader(new FileReader(fic));
-			StringBuilder sb = new StringBuilder();
-			String line = br.readLine();
-
-			while (line != null) {
-				sb.append(line);
-				sb.append(System.lineSeparator());
-				line = br.readLine();
-			}
-			contenu = sb.toString();
-
-			br.close();
+			fis = new FileInputStream(fichier);
+			contenub = new byte[(int) fichier.length()];
+			fis.read(contenub);
+			fis.close();
+			contenu = new String(contenub,"UTF8");
+			
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 		return contenu;
 	}
+	
+
 
 	public boolean createFile(String fic) {
 		boolean isFileCreated = false;
