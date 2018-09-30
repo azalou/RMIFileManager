@@ -65,8 +65,10 @@ public class FMServer implements ServerInterface {
 				tempUser = lecteur.next();
 				tempPassWor = lecteur.next();
 
-				if (tempUser.trim().equals(login.trim())) {			
-					if (tempPassWor.trim().equals(password.trim())) {						
+				if (tempUser.trim().equals(login.trim())) {		
+					
+					if (tempPassWor.trim().equals(password.trim())) {
+						
 						clientVerified = true;						
 					} else {
 						clientVerified = false;
@@ -97,7 +99,8 @@ public class FMServer implements ServerInterface {
 				tempUser = lecteur.next();
 				tempPasswor = lecteur.next();
 				
-				if (tempUser.trim().equals(login.trim())) {					
+				if (tempUser.trim().equals(login.trim())) {	
+					
 					System.out.println("L'utilisateur existe déjà");
 					return isNewUserCreated;
 				}

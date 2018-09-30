@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public class ClientManager {
     private ArrayList<String> clients = new ArrayList<String>();
-    private final static String CLIENT_MANAGER = "IDClient.txt";
+    private final static String CLIENT_MANAGER = "ClientID.txt";
 
     public ClientManager() {
         try {

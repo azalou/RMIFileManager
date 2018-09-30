@@ -18,6 +18,7 @@ import ca.shared.WorkFile;
 public class FMClient {
 	private final static FMFileManager fileManager = new FMFileManager();
 	private final static String CLIENT_ID_FILE = "clientId.txt";
+	private String idClient = null;
 	public static void main(String[] args) {
 		String distantHostname = "127.0.0.1";
 	
@@ -44,16 +45,17 @@ public class FMClient {
 
 	private void run() {
 		Scanner scanInput = new Scanner(System.in);
+
 		if (stub != null) {
 			if (checkLogin()) {
 				String command = null;
 				System.out.println("succes");
 				String[] fullcommande = null;
 				boolean interactConsole = true;
+
 				while (interactConsole) {
 					System.out.println(">");
-					command = scanInput.nextLine();
-					
+					command = scanInput.nextLine();					
 					fullcommande = command.trim().split(" ");
 					
 					command = fullcommande[0];
@@ -69,14 +71,7 @@ public class FMClient {
 						getFileContent(fullcommande[1]);
 						break;
 					case "lock":
-						try {
-							stub.createIDclient();
-							lockFile(fullcommande[1]);
-						} catch (RemoteException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						
+							lockFile(fullcommande[1],this.idClient);						
 						break;
 					default:
 						System.out.println("invalid command");
@@ -85,10 +80,12 @@ public class FMClient {
 				}
 			} else {
 				System.out.println("Mauvais nom d'utiliateur ou mot de passe. Create new user (yes/no)?");
+				
 				String createnewUser = scanInput.nextLine();
+				
 				if (createnewUser.trim().equals("yes")) {
-					createUser();
 					
+					createUser();					
 					System.out.println("user created");
 				}
 			}
@@ -96,13 +93,14 @@ public class FMClient {
 		scanInput.close();
 	}
 
-	private void lockFile(String ficName) {
+	private void lockFile(String ficName, String iDclient2) {
 		File fic = new File(ficName);
 		if (fic.exists()) {
 			try {
 				String chks = fileManager.getChecksum(ficName);
-				String IDclient = fileManager.readFile(CLIENT_ID_FILE);
-				stub.lock(ficName, IDclient, chks);
+//				String IDclient = fileManager.readFile(CLIENT_ID_FILE);
+				WorkFile lockedfile = stub.lock(ficName, iDclient2, chks);
+				System.out.println(lockedfile.getName());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -145,7 +143,7 @@ public class FMClient {
 		try {
 			ArrayList<WorkFile> listFiles = stub.list();
 			for (int count = 0; count < listFiles.size(); count++) {
-				System.out.println(listFiles.get(count).getName());
+				System.out.println(listFiles.get(count).getName() + " used by " + listFiles.get(count).getLockClientID());
 			}
 		} catch (RemoteException e) {
 			System.out.println("Erreur: " + e.getMessage());
@@ -171,6 +169,9 @@ public class FMClient {
 	}
 
 	private boolean checkLogin() {
+		String IDclient = null;
+		File idFile = new File(CLIENT_ID_FILE);
+		idFile.delete();
 		boolean Validation = false;
 		System.out.print("Entrer le nom d'utilisateur : ");
 		@SuppressWarnings("resource")
@@ -182,9 +183,19 @@ public class FMClient {
 		password = scanner.nextLine();
 		try {
 			Validation = stub.verify(username, password);
+			if (Validation) {
+				this.idClient = stub.createIDclient();
+				System.out.println(this.idClient);
+				FileWriter fw = new FileWriter(CLIENT_ID_FILE);
+				fw.write(this.idClient);
+				fw.close();
+				
+			}
 		} catch (RemoteException e) {
 			System.out.println("Erreur: " + e.getMessage());
 			e.printStackTrace();
+		} catch (IOException errFile) {
+			errFile.printStackTrace();
 		}
 		// scanner.close();
 		return Validation;
