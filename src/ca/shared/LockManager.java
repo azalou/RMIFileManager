@@ -11,10 +11,11 @@ import java.util.ArrayList;
 public class LockManager {
 	private ArrayList<WorkFile> files = new ArrayList<WorkFile>();
     private final static String LOCK_FILE_NAME = "lockMetadata.txt";
+    private static final String CONF_DIR = "configDir";
 
     public LockManager() {
         try {
-            BufferedReader br = new BufferedReader(new FileReader(LOCK_FILE_NAME));
+            BufferedReader br = new BufferedReader(new FileReader(CONF_DIR + File.separator + LOCK_FILE_NAME));
             StringBuilder sb = new StringBuilder();
             String line = br.readLine();
 
@@ -39,7 +40,9 @@ public class LockManager {
             br.close();
         } catch (FileNotFoundException e) {
             try {
-                File file = new File(LOCK_FILE_NAME);
+            	new File(CONF_DIR).mkdirs();
+            	
+                File file = new File(CONF_DIR + File.separator + LOCK_FILE_NAME);
                 file.createNewFile();
             } catch (IOException ee) {
                 ee.printStackTrace();
@@ -61,7 +64,7 @@ public class LockManager {
 
     private void syncLockFile() {
         try {
-            FileWriter fw = new FileWriter(LOCK_FILE_NAME, false);
+            FileWriter fw = new FileWriter(CONF_DIR + File.separator + LOCK_FILE_NAME, false);
             for (WorkFile f : files) {
                 fw.write(f.getName() + "\t" + f.getLockClientID() + System.lineSeparator());
             }

@@ -52,9 +52,15 @@ public class FMClient {
 				System.out.println("succes");
 				String[] fullcommande = null;
 				boolean interactConsole = true;
-
+				System.out.println("Bienvenu sur le serveur de gestion de fichier RMI");
+				System.out.println("Les commandes possibles sont:");
+				System.out.println("exit :\tQuitter l'application");
+				System.out.println("list :\tLister les fichiers présents sur le serveur et leur statut");
+				System.out.println("lock :\tVerouiller un fichier pour empécher la modification");
+				System.out.println("get  :\tTélécharger un fichier si il est plus récent que la copie locale");
 				while (interactConsole) {
-					System.out.println(">");
+					
+					System.out.print("> ");
 					command = scanInput.nextLine();					
 					fullcommande = command.trim().split(" ");
 					
@@ -93,64 +99,7 @@ public class FMClient {
 		scanInput.close();
 	}
 
-	private void lockFile(String ficName, String iDclient2) {
-		File fic = new File(ficName);
-		if (fic.exists()) {
-			try {
-				String chks = fileManager.getChecksum(ficName);
-//				String IDclient = fileManager.readFile(CLIENT_ID_FILE);
-				WorkFile lockedfile = stub.lock(ficName, iDclient2, chks);
-				System.out.println(lockedfile.getName());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		
-	}
-
-	private void getFileContent(String ficName) {
-		File fic = new File(ficName);
-		if (!fic.exists()) {
-			try {
-				fic.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		String chks = fileManager.getChecksum(ficName);
-		String contenu = null;
-		try {
-			contenu = stub.get(ficName, chks);
-		} catch (RemoteException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		
-		if (contenu !=null ) {
-			try {
-				FileWriter fw = new FileWriter(fic);
-				fw.write(contenu);
-				fw.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			
-		}
-		
-	}
-
-	private void getListOfFiles() {
-		try {
-			ArrayList<WorkFile> listFiles = stub.list();
-			for (int count = 0; count < listFiles.size(); count++) {
-				System.out.println(listFiles.get(count).getName() + " used by " + listFiles.get(count).getLockClientID());
-			}
-		} catch (RemoteException e) {
-			System.out.println("Erreur: " + e.getMessage());
-		}
-
-	}
-
+	
 	private ServerInterface loadServerStub(String hostname) {
 		ServerInterface stub = null;
 
@@ -217,6 +166,65 @@ public class FMClient {
 		} catch (RemoteException e) {
 			System.out.println("Erreur: " + e.getMessage());
 			return isUserCreated;
+		}
+
+	}
+
+	private void lockFile(String ficName, String iDclient2) {
+		File fic = new File(ficName);
+		if (fic.exists()) {
+			try {
+				String chks = fileManager.getChecksum(ficName);
+//				String IDclient = fileManager.readFile(CLIENT_ID_FILE);
+				WorkFile lockedfile = stub.lock(ficName, iDclient2, chks);
+				System.out.println((lockedfile.getLockClientID()));
+				System.out.println(lockedfile.getName());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+	}
+
+	private void getFileContent(String ficName) {
+		File fic = new File(ficName);
+		if (!fic.exists()) {
+			try {
+				fic.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		String chks = fileManager.getChecksum(ficName);
+		String contenu = null;
+		try {
+			contenu = stub.get(ficName, chks);
+		} catch (RemoteException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		if (contenu !=null ) {
+			try {
+				FileWriter fw = new FileWriter(fic);
+				fw.write(contenu);
+				fw.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+		}
+		
+	}
+
+	private void getListOfFiles() {
+		try {
+			ArrayList<WorkFile> listFiles = stub.list();
+			for (int count = 0; count < listFiles.size(); count++) {
+				System.out.println(listFiles.get(count).getName() + " used by " + listFiles.get(count).getLockClientID());
+			}
+		} catch (RemoteException e) {
+			System.out.println("Erreur: " + e.getMessage());
 		}
 
 	}

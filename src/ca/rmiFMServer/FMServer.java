@@ -4,6 +4,7 @@ import java.rmi.ConnectException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.SecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -20,6 +21,8 @@ import ca.shared.WorkFile;
 public class FMServer implements ServerInterface {
 	private final static FMFileManager fileManager = new FMFileManager();
 	private final static ClientManager clientManager = new ClientManager();
+	private static final String CONF_DIR = "configDir";
+	private final static String user_logins = "logins.txt";
 
 	public static void main(String[] args) {
 		FMServer server = new FMServer();
@@ -58,7 +61,7 @@ public class FMServer implements ServerInterface {
 			String tempUser = "";
 			String tempPassWor = "";
 			Scanner lecteur;
-			lecteur = new Scanner(new File("logins.txt"));
+			lecteur = new Scanner(new File(CONF_DIR + File.separator + user_logins));
 			lecteur.useDelimiter("[,\n]");
 
 			while (lecteur.hasNext()) {
@@ -77,9 +80,18 @@ public class FMServer implements ServerInterface {
 			}
 			lecteur.close();
 		} catch (FileNotFoundException e) {
-			System.out.println("FileNotFoundException: " + e.getMessage());
+			System.out.println("FileNotFoundException: " + e.getMessage() + " On cree le fichier de login");
+			new File(CONF_DIR).mkdirs();
+			File userLogins = new File(CONF_DIR + File.separator + user_logins);
+			if (!userLogins.exists())
+				try {
+					userLogins.createNewFile();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 		} catch (Exception e) {
-			System.out.println("Exception: " + e.getMessage());
+			System.out.println("Exception: " + e.getMessage() + " erreur dans verify");
 		}
 		return clientVerified;
 	}
@@ -91,8 +103,9 @@ public class FMServer implements ServerInterface {
 		boolean isNewUserCreated = false;
 		String tempUser = "";
 		String tempPasswor = "";
+				
 		try {
-			lecteur = new Scanner(new File("logins.txt"));
+			lecteur = new Scanner(new File(CONF_DIR + File.separator + user_logins));
 			lecteur.useDelimiter("[,\n]");
 			// verifie que le nom d'utilisateur n'existe pas déjà)
 			while (lecteur.hasNext()) {
@@ -108,7 +121,7 @@ public class FMServer implements ServerInterface {
 
 			FileWriter fl = null;
 			String nn = login + "," + password;
-			fl = new FileWriter("logins.txt", true);
+			fl = new FileWriter(CONF_DIR + File.separator + user_logins, true);
 			fl.write(nn);
 			fl.close();
 			isNewUserCreated = true;

@@ -11,6 +11,7 @@ import java.util.UUID;
 
 public class ClientManager {
     private ArrayList<String> clients = new ArrayList<String>();
+    private static final String CONF_DIR = "configDir";
     private final static String CLIENT_MANAGER = "ClientID.txt";
 
     public ClientManager() {
@@ -34,7 +35,9 @@ public class ClientManager {
             br.close();
         } catch (FileNotFoundException e) {
             try {
-                File file = new File(CLIENT_MANAGER);
+            	new File(CONF_DIR).mkdirs();
+            	
+                File file = new File(CONF_DIR + File.separator + CLIENT_MANAGER);
                 file.createNewFile();
             } catch (IOException ee) {
                 ee.printStackTrace();
